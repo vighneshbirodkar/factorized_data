@@ -43,7 +43,8 @@ class SceneObject(object):
         ox, oy, oz = coords
         tx, ty, tz = -coords
 
-        ty += extents[1]/2
+        #ty -= extents[1]/2
+        oy += extents[1]/2
 
         camera_str = ('{ox} {oy} {oz} {tx} {ty} {tz} 0 1 0'.
                       format(ox=ox, oy=oy, oz=oz, tx=tx, ty=ty, tz=tz))
@@ -65,8 +66,9 @@ class SceneObject(object):
         src_obj = '%s.obj' % self.name
         dst_obj = '__t__%s.obj' % self.name
         command = ('scn2scn {src_path} {dst_path} -rx {rx} -ry {ry} -rz {rz} '
+                   '-tx {tx} -ty {ty} -tz {tz}'
                    .format(src_path=src_obj, dst_path=dst_obj,
-                           rx=rx, ry=ry, rz=rz))
+                           rx=rx, ry=ry, rz=rz, tx=tx, ty=ty, tz=tz))
 
         run_command(command)
         return dst_obj
@@ -78,24 +80,49 @@ class SceneObject(object):
                    format(obj=dst_obj, cam=self.camera_str))
         run_command(command)
 
-    def transform_img(self, outfile, tx=0, ty=0, tz=0, rx=0, ry=0, rz=0):
+    def transform_img(self, outfile, tx=0, ty=0, tz=0, rx=0, ry=0, rz=0,
+                      light=None):
         os.chdir(self.folder)
-        print(os.path.basename(outfile))
 
-        dst_obj = self._transform_inplace(tx, ty, tz, rz, ry, rz)
+        dst_obj = self._transform_inplace(tx, ty, tz, rx, ry, rz)
         with open('__cam', 'w') as f:
             cam = self.camera_str + ' 0.4 0.307065 1'
             f.write(cam.replace(' ', '\t'))
 
         outpath = os.path.dirname(outfile)
-        command = ('scn2img -glut -capture_color_images {obj} {cameras} {outpath}'
-                   .format(obj=dst_obj, cameras='__cam', outpath=outpath))
 
+        if light is not None:
+
+            # From R3Graphics/R3Scene.cpp in function CreateDirectionalLights
+            with open('__light', 'w') as f:
+                f.write('directional_light world {i} 1 1 1 3 2 3\n'.
+                        format(i=light))
+                f.write('directional_light world {i} 1 1 1 -3 -4 -5'.
+                        format(i=light))
+            command = ('scn2img -capture_color_images {obj} __cam '
+                       '{outpath} -lights __light'
+                       .format(obj=dst_obj, outpath=outpath))
+        else:
+            command = ('scn2img -capture_color_images {obj} __cam '
+                       '{outpath}'
+                       .format(obj=dst_obj, outpath=outpath))
+
+        print(command)
         run_command(command)
         os.rename(os.path.join(outpath, '000000_color.jpg'), outfile)
+
+    def __del__(self):
+        os.chdir(self.folder)
+        os.remove('__t__%s.obj' % self.name)
+        os.remove('__t__%s.mtl' % self.name)
+        os.remove('__cam')
+
 
 obj = SceneObject('/home/vighnesh/data/suncg_data/object/42/')
 
 #obj.view()
 #obj.transform_view(rx=45)
-obj.transform_img('/home/vighnesh/Desktop/out/1.jpg', ry=90)
+obj.transform_img('/home/vighnesh/Desktop/out/1.jpg', tx=-1, ry=10, light=0.2)
+obj.transform_img('/home/vighnesh/Desktop/out/2.jpg', tx=-0, ry=20, light=0.4)
+obj.transform_img('/home/vighnesh/Desktop/out/3.jpg', tx=1, ry=30, light=0.8)
+obj.transform_img('/home/vighnesh/Desktop/out/4.jpg', tx=2, ry=40, light=2.0)
