@@ -60,8 +60,7 @@ class SceneObject(object):
         result = run_command('scninfo %s.obj' % self.name)
         self.bbox1, self.bbox2 = _parse_bbox_extents(result)
 
-    def transform_view(self, tx=0, ty=0, tz=0, rx=0, ry=0, rz=0):
-
+    def _transform_inplace(self, tx=0, ty=0, tz=0, rx=0, ry=0, rz=0):
         os.chdir(self.folder)
         src_obj = '%s.obj' % self.name
         dst_obj = '__t__%s.obj' % self.name
@@ -69,14 +68,34 @@ class SceneObject(object):
                    .format(src_path=src_obj, dst_path=dst_obj,
                            rx=rx, ry=ry, rz=rz))
 
-        print(command)
         run_command(command)
+        return dst_obj
+
+    def transform_view(self, tx=0, ty=0, tz=0, rx=0, ry=0, rz=0):
+
+        dst_obj = self._transform_inplace(tx, ty, tz, rz, ry, rz)
         command = ('scnview {obj} -camera {cam}'.
                    format(obj=dst_obj, cam=self.camera_str))
         run_command(command)
 
+    def transform_img(self, outfile, tx=0, ty=0, tz=0, rx=0, ry=0, rz=0):
+        os.chdir(self.folder)
+        print(os.path.basename(outfile))
 
-obj = SceneObject('/home/vighnesh/data/suncg_data/object/40/')
+        dst_obj = self._transform_inplace(tx, ty, tz, rz, ry, rz)
+        with open('__cam', 'w') as f:
+            cam = self.camera_str + ' 0.4 0.307065 1'
+            f.write(cam.replace(' ', '\t'))
+
+        outpath = os.path.dirname(outfile)
+        command = ('scn2img -glut -capture_color_images {obj} {cameras} {outpath}'
+                   .format(obj=dst_obj, cameras='__cam', outpath=outpath))
+
+        run_command(command)
+        os.rename(os.path.join(outpath, '000000_color.jpg'), outfile)
+
+obj = SceneObject('/home/vighnesh/data/suncg_data/object/42/')
 
 #obj.view()
-obj.transform_view(rx=45)
+#obj.transform_view(rx=45)
+obj.transform_img('/home/vighnesh/Desktop/out/1.jpg', ry=90)
