@@ -3,12 +3,21 @@ import subprocess
 import os
 import re
 import numpy as np
+import errno
 
 
 float_re = r'([+-]?(\d+(\.\d*)?|\.\d+)([eE][+-]?\d+)?)'
 tuple_re = r'\(\s*{0}\s*{0}\s*{0}\s*\)'.format(float_re)
 bbox_regex = re.compile(r'.*BBox\s*=\s*{0}\s*{0}.*'.format(tuple_re),
                         flags=re.DOTALL)
+
+
+def silentremove(filename):
+    try:
+        os.remove(filename)
+    except OSError as e:
+        if e.errno != errno.ENOENT:
+            raise
 
 
 def _parse_bbox_extents(string):
@@ -33,17 +42,16 @@ class SceneObject(object):
         self._fetch_info()
         self._guess_good_cam()
 
-    def _guess_good_cam(self):
+    def _guess_good_cam(self, elevation=1.0):
 
         os.chdir(self.folder)
         extents = np.abs(np.maximum(self.bbox1, self.bbox2))
         coords = np.zeros(3)
-        coords[1] = extents[1]
+        coords[1] = extents[1]*elevation
         coords[2] = np.max(extents)*4
         ox, oy, oz = coords
         tx, ty, tz = -coords
 
-        #ty -= extents[1]/2
         oy += extents[1]/2
 
         camera_str = ('{ox} {oy} {oz} {tx} {ty} {tz} 0 1 0'.
@@ -73,16 +81,23 @@ class SceneObject(object):
         run_command(command)
         return dst_obj
 
-    def transform_view(self, tx=0, ty=0, tz=0, rx=0, ry=0, rz=0):
+    def transform_view(self, tx=0, ty=0, tz=0, rx=0, ry=0, rz=0,
+                       elevation=None):
 
-        dst_obj = self._transform_inplace(tx, ty, tz, rz, ry, rz)
+        if elevation is not None:
+            self._guess_good_cam(elevation)
+
+        dst_obj = self._transform_inplace(tx, ty, tz, rx, ry, rz)
         command = ('scnview {obj} -camera {cam}'.
                    format(obj=dst_obj, cam=self.camera_str))
         run_command(command)
 
     def transform_img(self, outfile, tx=0, ty=0, tz=0, rx=0, ry=0, rz=0,
-                      light=None):
+                      elevation=None, light=None):
         os.chdir(self.folder)
+
+        if elevation is not None:
+            self._guess_good_cam(elevation)
 
         dst_obj = self._transform_inplace(tx, ty, tz, rx, ry, rz)
         with open('__cam', 'w') as f:
@@ -107,22 +122,38 @@ class SceneObject(object):
                        '{outpath}'
                        .format(obj=dst_obj, outpath=outpath))
 
-        print(command)
         run_command(command)
         os.rename(os.path.join(outpath, '000000_color.jpg'), outfile)
 
     def __del__(self):
         os.chdir(self.folder)
-        os.remove('__t__%s.obj' % self.name)
-        os.remove('__t__%s.mtl' % self.name)
-        os.remove('__cam')
+        silentremove('__t__%s.obj' % self.name)
+        silentremove('__t__%s.mtl' % self.name)
+        silentremove('__cam')
+        silentremove('__light')
 
+    def interpolate_image(self, outfolder, n, **kwargs):
 
-obj = SceneObject('/home/vighnesh/data/suncg_data/object/42/')
+        prop_arrays = {}
+        for prop in kwargs:
 
-#obj.view()
-#obj.transform_view(rx=45)
-obj.transform_img('/home/vighnesh/Desktop/out/1.jpg', tx=-1, ry=10, light=0.2)
-obj.transform_img('/home/vighnesh/Desktop/out/2.jpg', tx=-0, ry=20, light=0.4)
-obj.transform_img('/home/vighnesh/Desktop/out/3.jpg', tx=1, ry=30, light=0.8)
-obj.transform_img('/home/vighnesh/Desktop/out/4.jpg', tx=2, ry=40, light=2.0)
+            if hasattr(kwargs[prop], '__iter__'):
+                start, end = kwargs[prop]
+            else:
+                start = end = kwargs[prop]
+
+            prop_arrays[prop] = np.linspace(start, end, num=n)
+
+        for i in range(n):
+            props = {}
+            for key in kwargs:
+                props[key] = prop_arrays[key][i]
+            imgname = os.path.join(outfolder, '%d.jpg' % i)
+            self.transform_img(imgname, **props)
+
+obj = SceneObject('/home/vighnesh/data/suncg_data/object/s__611/')
+
+# obj.view()
+#obj.transform_view(ry=45, elevation=0)
+obj.interpolate_image('/home/vighnesh/Desktop/out/', elevation=(1, 5),
+                      n=10)
