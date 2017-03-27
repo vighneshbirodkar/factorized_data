@@ -109,8 +109,9 @@ class SceneObject(object):
         outpath = os.path.dirname(outfile)
 
         command = ('scn2img -{mode} -capture_color_images {obj} __cam '
-                   '{outpath}'
-                   .format(mode=self.mode, obj=dst_obj, outpath=outpath))
+                   '{outpath} -width {size} -height {size}'
+                   .format(mode=self.mode, obj=dst_obj, outpath=outpath,
+                           size=self.img_size))
         if light is not None:
 
             # From R3Graphics/R3Scene.cpp in function CreateDirectionalLights
@@ -146,7 +147,7 @@ class SceneObject(object):
         for i in range(n):
             props = {}
             name = ''
-            for key in kwargs:
+            for key in sorted(kwargs.keys()):
                 props[key] = prop_arrays[key][i]
                 name += '%s-%.2f_' % (key, props[key])
 
@@ -154,9 +155,3 @@ class SceneObject(object):
             name += '.jpg'
             imgname = os.path.join(outfolder, name)
             self.transform_img(imgname, **props)
-
-
-obj = SceneObject('/home/vighnesh/data/suncg_data/object/101/', mode='glut')
-
-obj.interpolate_image('/home/vighnesh/Desktop/out', elevation=(1, 10),
-                      rz=(0, 180), rx=(0, 90), ry=(0, 30), n=20)
