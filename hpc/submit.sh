@@ -1,10 +1,9 @@
 JOB_NAME=$1
 shift
-export COMMAND="$@ --name $JOB_NAME"
+export COMMAND="$@"
 export JOB_NAME=$JOB_NAME
 
 
-SCRIPT="$SCRIPT --name $JOB_NAME"
 echo "Job name = $JOB_NAME"
 echo "Command = $COMMAND"
 

@@ -16,7 +16,8 @@ echo "Starting script.sh"
 echo "Username = $USER_NAME"
 echo "Command = $COMMAND"
 
-module load pytorch/intel/20170226
+module load mesa/intel/17.0.2
+module load python3/intel/3.5.3 
 
-cd /scratch/$USER_NAME/code/factor
+cd /scratch/$USER_NAME/code/factorized_data
 eval "$COMMAND"
