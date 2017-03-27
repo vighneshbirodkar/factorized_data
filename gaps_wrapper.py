@@ -34,11 +34,12 @@ def run_command(command):
 
 
 class SceneObject(object):
-    def __init__(self, folder, mode='mesa'):
+    def __init__(self, folder, img_size=256, mode='mesa'):
         self.init_dir = os.getcwd()
         self.folder = folder.rstrip('/')
         self.name = os.path.basename(self.folder)
         self.mode = mode
+        self.img_size = img_size
 
         self._fetch_info()
         self._guess_good_cam()
@@ -107,6 +108,9 @@ class SceneObject(object):
 
         outpath = os.path.dirname(outfile)
 
+        command = ('scn2img -{mode} -capture_color_images {obj} __cam '
+                   '{outpath}'
+                   .format(mode=self.mode, obj=dst_obj, outpath=outpath))
         if light is not None:
 
             # From R3Graphics/R3Scene.cpp in function CreateDirectionalLights
@@ -115,13 +119,7 @@ class SceneObject(object):
                         format(i=light))
                 f.write('directional_light world {i} 1 1 1 -3 -4 -5'.
                         format(i=light))
-            command = ('scn2img -{mode} -capture_color_images {obj} __cam '
-                       '{outpath} -lights __light  -background 1 1 1'
-                       .format(obj=dst_obj, outpath=outpath, mode=self.mode))
-        else:
-            command = ('scn2img -{mode} -capture_color_images {obj} __cam '
-                       '{outpath} -background 1 1 1'
-                       .format(mode=self.mode, obj=dst_obj, outpath=outpath))
+            command += ' -lights __light'
 
         run_command(command)
         os.rename(os.path.join(outpath, '000000_color.jpg'), outfile)
@@ -147,13 +145,18 @@ class SceneObject(object):
 
         for i in range(n):
             props = {}
+            name = ''
             for key in kwargs:
                 props[key] = prop_arrays[key][i]
-            imgname = os.path.join(outfolder, '%d.jpg' % i)
+                name += '%s-%.2f_' % (key, props[key])
+
+            name = name.rstrip('_')
+            name += '.jpg'
+            imgname = os.path.join(outfolder, name)
             self.transform_img(imgname, **props)
 
 
-obj = SceneObject('/scratch/vnb222/data/suncg_data/object/101/')
+obj = SceneObject('/home/vighnesh/data/suncg_data/object/101/', mode='glut')
 
-obj.interpolate_image('/scratch/vnb222/testing', elevation=(1, 10),
+obj.interpolate_image('/home/vighnesh/Desktop/out', elevation=(1, 10),
                       rz=(0, 180), rx=(0, 90), ry=(0, 30), n=20)
