@@ -47,10 +47,10 @@ class SceneObject(object):
     def _guess_good_cam(self, elevation=1.0):
 
         os.chdir(self.folder)
-        extents = np.abs(np.maximum(self.bbox1, self.bbox2))
+        extents = np.abs(self.bbox1 - self.bbox2)
         coords = np.zeros(3)
         coords[1] = extents[1]*elevation
-        coords[2] = np.max(extents)*4
+        coords[2] = np.max(extents)*2
         ox, oy, oz = coords
         tx, ty, tz = -coords
 
@@ -109,7 +109,7 @@ class SceneObject(object):
         outpath = os.path.dirname(outfile)
 
         command = ('scn2img -{mode} -capture_color_images {obj} __cam '
-                   '{outpath} -width {size} -height {size}'
+                   '{outpath} -width {size} -height {size} -background 1 1 1'
                    .format(mode=self.mode, obj=dst_obj, outpath=outpath,
                            size=self.img_size))
         if light is not None:
@@ -146,7 +146,7 @@ class SceneObject(object):
 
         for i in range(n):
             props = {}
-            name = ''
+            name = '%02d-' % i
             for key in sorted(kwargs.keys()):
                 props[key] = prop_arrays[key][i]
                 name += '%s-%.2f_' % (key, props[key])
