@@ -1,12 +1,11 @@
 import argparse
 import csv
-import itertools
 import os
 import numpy as np
 import time
 import multiprocessing as mp
 
-from gaps_wrapper import SceneObject
+from suncg_wrapper import SceneObject
 
 ELEVATIONS = np.linspace(-1, 2, num=5)
 

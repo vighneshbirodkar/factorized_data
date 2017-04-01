@@ -167,10 +167,3 @@ class SceneObject(object):
             name += '.jpg'
             imgname = os.path.join(outfolder, name)
             self.transform_img(imgname, **props)
-
-
-#obj = SceneObject('/home/vighnesh/data/suncg_data/object/42', mode='glut')
-#obj = SceneObject('/home/vighnesh/data/suncg_data/house/0004d52d1aeeb8ae6de39d6bd993e992', mode='glut')
-
-#obj.interpolate_image(n=10, outfolder='/home/vighnesh/Desktop/test',
-#                      ry=(-90, 90))
