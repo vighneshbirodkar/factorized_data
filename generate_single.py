@@ -30,6 +30,9 @@ safe_mkdir(outdir)
 
 object_ids = []
 
+
+# Fetched from
+# https://github.com/shurans/SUNCGtoolbox/blob/master/metadata/ModelCategoryMapping.csv
 with open(os.path.join(opt.data_root, 'ModelCategoryMapping.csv')) as f:
     first = True
     for row in csv.reader(f):
@@ -45,11 +48,11 @@ with open(os.path.join(opt.data_root, 'ModelCategoryMapping.csv')) as f:
 
 def process_id(object_id):
     start_time = time.time()
-    
+
     dir_id = os.path.join(outdir, object_id)
     safe_mkdir(dir_id)
     input_dir = os.path.join(*(opt.data_root, 'object', object_id))
-    scene_object = SceneObject(input_dir, img_size=opt.img_size)
+    scene_object = SceneObject(input_dir, img_size=opt.img_size, mode='glut')
 
     for elevation in ELEVATIONS:
         dir_elevation = os.path.join(dir_id, 'elevation_%.2f' % elevation)
@@ -60,8 +63,6 @@ def process_id(object_id):
     time_taken = time.time() - start_time
     print('Processed ID %s in %.3f secs. ' % (object_id, time_taken))
 
-process_id(object_ids[0])
 
-pool = mp.Pool(8)
-
+pool = mp.Pool()
 pool.map(process_id, object_ids)

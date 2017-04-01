@@ -37,12 +37,24 @@ class SceneObject(object):
     def __init__(self, folder, img_size=256, mode='mesa'):
         self.init_dir = os.getcwd()
         self.folder = folder.rstrip('/')
-        self.name = os.path.basename(self.folder)
+        self.filename = self._guess_filename()
+        self.basename = os.path.splitext(self.filename)[0]
         self.mode = mode
         self.img_size = img_size
 
         self._fetch_info()
         self._guess_good_cam()
+
+    def _guess_filename(self):
+
+        name = os.path.basename(self.folder) + '.obj'
+        filename = os.path.join(self.folder, name)
+        if os.path.exists(filename):
+            return name
+
+        filename = os.path.join(self.folder, 'house.json')
+        if os.path.exists(filename):
+            return 'house.json'
 
     def _guess_good_cam(self, elevation=1.0):
 
@@ -62,19 +74,19 @@ class SceneObject(object):
 
     def view(self):
 
-        command = ('scnview {name}.obj -camera {cam}'.
-                   format(name=self.name, cam=self.camera_str))
+        command = ('scnview {name} -camera {cam}'.
+                   format(name=self.filename, cam=self.camera_str))
         run_command(command)
 
     def _fetch_info(self):
         os.chdir(self.folder)
-        result = run_command('scninfo %s.obj' % self.name)
+        result = run_command('scninfo %s' % self.filename)
         self.bbox1, self.bbox2 = _parse_bbox_extents(result)
 
     def _transform_inplace(self, tx=0, ty=0, tz=0, rx=0, ry=0, rz=0):
         os.chdir(self.folder)
-        src_obj = '%s.obj' % self.name
-        dst_obj = '__t__%s.obj' % self.name
+        src_obj = self.filename
+        dst_obj = '__t__%s.obj' % self.basename
         command = ('scn2scn {src_path} {dst_path} -rx {rx} -ry {ry} -rz {rz} '
                    '-tx {tx} -ty {ty} -tz {tz}'
                    .format(src_path=src_obj, dst_path=dst_obj,
@@ -127,8 +139,8 @@ class SceneObject(object):
 
     def __del__(self):
         os.chdir(self.folder)
-        silentremove('__t__%s.obj' % self.name)
-        silentremove('__t__%s.mtl' % self.name)
+        silentremove('__t__%s.obj' % self.basename)
+        silentremove('__t__%s.mtl' % self.basename)
         silentremove('__cam')
         silentremove('__light')
 
@@ -155,3 +167,10 @@ class SceneObject(object):
             name += '.jpg'
             imgname = os.path.join(outfolder, name)
             self.transform_img(imgname, **props)
+
+
+#obj = SceneObject('/home/vighnesh/data/suncg_data/object/42', mode='glut')
+#obj = SceneObject('/home/vighnesh/data/suncg_data/house/0004d52d1aeeb8ae6de39d6bd993e992', mode='glut')
+
+#obj.interpolate_image(n=10, outfolder='/home/vighnesh/Desktop/test',
+#                      ry=(-90, 90))
