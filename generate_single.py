@@ -52,7 +52,7 @@ def process_id(object_id):
     dir_id = os.path.join(outdir, object_id)
     safe_mkdir(dir_id)
     input_dir = os.path.join(*(opt.data_root, 'object', object_id))
-    scene_object = SceneObject(input_dir, img_size=opt.img_size, mode='glut')
+    scene_object = SceneObject(input_dir, img_size=opt.img_size)
 
     for elevation in ELEVATIONS:
         dir_elevation = os.path.join(dir_id, 'elevation_%.2f' % elevation)
