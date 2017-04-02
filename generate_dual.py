@@ -69,6 +69,10 @@ def process_pair(pair):
     inp2 = os.path.join(object_dir, object2)
 
     dual_object = DualObjectJSON(inp1, inp2, tmp_dir, img_size=opt.img_size)
+
+    if os.path.exists(dir_pair):
+        print('%s exists, skipping' % dir_pair)
+
     safe_mkdir(dir_pair)
 
     speed1 = random.randint(-5, 5)
