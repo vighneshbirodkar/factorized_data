@@ -111,10 +111,13 @@ class SceneObject(Interpolator):
         if os.path.exists(filename):
             return 'house.json'
 
+    def get_extents(self):
+        return np.abs(self.bbox1 - self.bbox2)
+
     def _guess_good_cam(self, elevation=1.0):
 
         os.chdir(self.folder)
-        extents = np.abs(self.bbox1 - self.bbox2)
+        extents = self.get_extents()
         coords = np.zeros(3)
         coords[1] = extents[1]*elevation
         coords[2] = np.max(extents)*2
@@ -276,13 +279,16 @@ class DualObjectJSON(Interpolator):
     def __del__(self):
         shutil.rmtree(self.folder, ignore_errors=True)
 
+    def guess_random_xz(self):
+        params = {}
 
-#dobj = DualObjectJSON('/home/vighnesh/data/suncg_data/object/41',
-#                      '/home/vighnesh/data/suncg_data/object/42',
-#                      '/home/vighnesh/data/suncg_data/', mode='glut')
+        extents1 = self.object1.get_extents()
+        extents2 = self.object2.get_extents()
 
-#dobj.transform_img(outfile='/home/vighnesh/Desktop/test/image.jpg',
-#                   tx1=1, tx2=-1, ry1=45, ry2=45, elevation=-1)
+        params['tx1'] = -0.75*extents1[0]
+        params['tx2'] = 0.75*extents2[0]
 
-#dobj.interpolate_image('/home/vighnesh/Desktop/test/', n=10, tx1=-1, tx2=1,
-#                       ry1=(0, 360))
+        params['tz1'] = np.random.uniform(-1, 1)*np.max(extents1)
+        params['tz2'] = np.random.uniform(-1, 1)*np.max(extents2)
+
+        return params
