@@ -24,6 +24,7 @@ def safe_mkdir(path):
 
 
 opt = parser.parse_args()
+print(opt)
 opt.outdir = os.path.abspath(opt.outdir)
 
 random.seed(opt.seed)
@@ -54,7 +55,6 @@ while len(object_pairs) < opt.num:
     emax = np.max((e1, e2))
     emin = np.min((e1, e2))
 
-    print(emax/emin)
     if emax/emin <= SIZE_RATIO:
         object_pairs.append((name1, name2))
 
