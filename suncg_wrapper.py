@@ -223,7 +223,7 @@ class DualObjectJSON(Interpolator):
         self.img_size = img_size
 
         unique_name = uuid.uuid4().hex
-        self.folder = os.path.join(root_dir, 'tmp_house', unique_name)
+        self.folder = os.path.join(root_dir, unique_name)
         os.mkdir(self.folder)
 
     def _transform_inplace(self, tx1=0, ty1=0, tz1=0, tx2=0, ty2=0, tz2=0,
@@ -285,8 +285,8 @@ class DualObjectJSON(Interpolator):
         extents1 = self.object1.get_extents()
         extents2 = self.object2.get_extents()
 
-        params['tx1'] = -0.75*extents1[0]
-        params['tx2'] = 0.75*extents2[0]
+        params['tx1'] = -.75*np.max((extents1[0], extents1[2]))
+        params['tx2'] = .75*np.max((extents2[0], extents2[2]))
 
         params['tz1'] = np.random.uniform(-1, 1)*np.max(extents1)
         params['tz2'] = np.random.uniform(-1, 1)*np.max(extents2)
