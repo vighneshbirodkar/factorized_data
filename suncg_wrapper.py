@@ -292,3 +292,14 @@ class DualObjectJSON(Interpolator):
         params['tz2'] = np.random.uniform(-1, 1)*np.max(extents2)
 
         return params
+
+    def to_scene(self):
+
+        params = self.guess_random_xz()
+        self._transform_inplace(**params)
+
+        sobj = SceneObject(self.folder, mode=self.mode)
+
+        # Hold a reference so that the json object does not get cleaned up.
+        sobj.creator = self
+        return sobj
