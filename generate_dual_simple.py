@@ -15,6 +15,7 @@ parser.add_argument('--outdir', type=str, default='./output')
 parser.add_argument('--num', type=int, required=True)
 parser.add_argument('--seed', type=int, default=0)
 parser.add_argument('--img_size', type=int, default=256)
+parser.add_argument('--n_threads', type=int, default=8)
 
 
 def safe_mkdir(path):
@@ -86,5 +87,5 @@ def process_pair(pair):
     print('Processed pair {}'.format(pair))
 
 
-pool = mp.Pool()
+pool = mp.Pool(opt.n_threads)
 pool.map(process_pair, object_pairs)
