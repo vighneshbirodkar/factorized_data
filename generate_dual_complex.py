@@ -8,7 +8,7 @@ import multiprocessing as mp
 from suncg_wrapper import DualObjectJSON, SceneObject
 
 ELEVATIONS = np.linspace(-1, 2, num=5)
-SIZE_RATIO = 3.0
+SIZE_RATIO = 2.0
 
 parser = argparse.ArgumentParser()
 parser.add_argument('--data_root', type=str, default='.')
@@ -83,7 +83,7 @@ def process_pair(pair):
         dir_elevation = os.path.join(dir_pair, 'elevation_%.2f' % elevation)
         safe_mkdir(dir_elevation)
 
-        params = dual_object.guess_random_xz()
+        params = dual_object.guess_random_x()
         dual_object.interpolate_image(dir_elevation, elevation=elevation,
                                       ry1=(0, speed1*72), ry2=(0, speed2*72),
                                       n=36, **params)

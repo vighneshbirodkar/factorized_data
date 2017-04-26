@@ -293,6 +293,17 @@ class DualObjectJSON(Interpolator):
 
         return params
 
+    def guess_random_x(self):
+        params = {}
+
+        extents1 = self.object1.get_extents()
+        extents2 = self.object2.get_extents()
+
+        params['tx1'] = -.75*np.max((extents1[0], extents1[2]))
+        params['tx2'] = .75*np.max((extents2[0], extents2[2]))
+
+        return params
+
     def to_scene(self):
 
         params = self.guess_random_xz()
