@@ -2,7 +2,6 @@ import argparse
 import random
 import os
 import numpy as np
-import time
 import multiprocessing as mp
 
 from suncg_wrapper import DualObjectJSON, SceneObject
@@ -43,7 +42,7 @@ object_pairs = []
 scanned = 0
 while len(object_pairs) < opt.num:
     scanned += 1
-    
+
     name1 = random.choice(object_ids)
     object1 = SceneObject(os.path.join(*[opt.data_root, 'object', name1]))
 
@@ -61,6 +60,7 @@ while len(object_pairs) < opt.num:
 
 
 print('Scanned %d pairs to find %d suitable pairs.' % (scanned, opt.num))
+
 
 def process_pair(pair):
 
@@ -89,6 +89,7 @@ def process_pair(pair):
                                       n=36, **params)
 
     print('Processed pair {}'.format(pair))
+
 
 pool = mp.Pool(opt.n_threads)
 pool.map(process_pair, object_pairs)
