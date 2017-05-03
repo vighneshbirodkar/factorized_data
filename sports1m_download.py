@@ -1,3 +1,4 @@
+import hashlib
 import os
 import argparse
 import pytube
@@ -25,7 +26,7 @@ preferred_resolutions = ['240p', '360p', '480p', '144p']
 
 
 def download_vid(url):
-
+    
     try:
         yt = pytube.YouTube(url)
     except:
@@ -44,14 +45,15 @@ def download_vid(url):
         print('No suitable video for %s' % url)
         return 0
 
-    video.filename = uuid.uuid4()
+    filename = hashlib.sha256(url.encode('utf-8')).hexdigest()[:10]
+    video.filename = filename
     try:
         video.download(opt.outdir)
     except:
         print('Download error')
         return 0
 
-    print('Downloaded ' + url)
+    print('Downloaded %s to %s' % (url, filename))
     return 1
 
 
