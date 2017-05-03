@@ -3,6 +3,7 @@ import argparse
 import pytube
 import subprocess
 import multiprocessing as mp
+import uuid
 
 
 parser = argparse.ArgumentParser()
@@ -43,13 +44,13 @@ def download_vid(url):
         print('No suitable video for %s' % url)
         return 0
 
+    video.filename = uuid.uuid4()
     video.download(opt.outdir)
     print('Downloaded ' + url)
     return 1
 
 
 pool = mp.Pool(opt.n_threads)
-
 result = list(pool.map(download_vid, video_urls))
 
 print('Downloaded %d videos' % sum(result))
