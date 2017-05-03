@@ -2,7 +2,7 @@
 #
 #SBATCH --verbose
 #SBATCH --job-name=$JOB_NAME
-#SBATCH --time=24:00:00
+#SBATCH --time=48:00:00
 #SBATCH --nodes=1
 #SBATCH --mem=16GB
 #SBATCH --cpus-per-task=4
