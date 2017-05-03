@@ -45,7 +45,12 @@ def download_vid(url):
         return 0
 
     video.filename = uuid.uuid4()
-    video.download(opt.outdir)
+    try:
+        video.download(opt.outdir)
+    except:
+        print('Download error')
+        return 0
+
     print('Downloaded ' + url)
     return 1
 
