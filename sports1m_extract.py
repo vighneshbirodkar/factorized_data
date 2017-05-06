@@ -52,4 +52,4 @@ def process_vid(filename):
     print('Processed video %s' % filename)
 
 
-map(process_vid, input_filenames[opt.start_index:opt.end_index])
+list(map(process_vid, input_filenames[opt.start_index:opt.end_index]))
