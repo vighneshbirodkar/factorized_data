@@ -17,7 +17,8 @@ echo "Username = $USER_NAME"
 echo "Command = $COMMAND"
 
 module load mesa/intel/17.0.2
-module load python3/intel/3.5.3 
+module load python3/intel/3.5.3
+module load ffmpeg/intel
 
 cd /scratch/$USER_NAME/code/factorized_data
 eval "$COMMAND"
