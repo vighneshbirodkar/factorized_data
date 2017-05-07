@@ -4,7 +4,6 @@ import argparse
 import pytube
 import subprocess
 import multiprocessing as mp
-import random
 import pprint
 
 
@@ -12,14 +11,11 @@ parser = argparse.ArgumentParser()
 parser.add_argument('--id_file', type=str, default='./train_partition.txt')
 parser.add_argument('--outdir', type=str, default='./output')
 parser.add_argument('--n_threads', type=int, default=8)
-parser.add_argument('--seed', type=int, default=None)
 parser.add_argument('--start_index', type=int, default=0)
 parser.add_argument('--end_index', type=int, default=None)
 
 
 opt = parser.parse_args()
-random.seed(opt.seed)
-
 pprint.pprint(vars(opt), indent=2)
 
 
