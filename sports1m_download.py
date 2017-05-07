@@ -13,6 +13,8 @@ parser.add_argument('--id_file', type=str, default='./train_partition.txt')
 parser.add_argument('--outdir', type=str, default='./output')
 parser.add_argument('--n_threads', type=int, default=8)
 parser.add_argument('--seed', type=int, default=None)
+parser.add_argument('--start_index', type=int, default=0)
+parser.add_argument('--end_index', type=int, default=None)
 
 
 opt = parser.parse_args()
@@ -33,15 +35,9 @@ def get_hash(url):
     return hashlib.sha256(url.encode('utf-8')).hexdigest()[:10]
 
 
-def download_random_vid(_):
-
-    downloaded = set([name.split('.')[0] for name in os.listdir(opt.outdir)])
+def download_vid(index):
     
-    url = random.choice(video_urls)
-
-    while get_hash(url) in downloaded:
-        print('Skipping %s as %s exists' % (url, get_hash(url)))
-        url = random.choice(video_urls)
+    url = video_urls[index]
 
     try:
         yt = pytube.YouTube(url)
@@ -49,19 +45,15 @@ def download_random_vid(_):
         print('Cannot find %s' % url)
         return 0
 
-    video = None
+    videos = yt.filter(resolution='360p', extension='mp4')
 
-    for res in preferred_resolutions:
-        videos = yt.filter(resolution=res)
-        if len(videos) > 0:
-            video = videos[0]
-            break
-
-    if video is None:
+    if len(videos) == 0:
         print('No suitable video for %s' % url)
         return 0
+    else:
+        video = videos[0]
 
-    filename = hashlib.sha256(url.encode('utf-8')).hexdigest()[:10]
+    filename = 'video%05d' % index
     video.filename = filename
     try:
         video.download(opt.outdir)
@@ -74,6 +66,6 @@ def download_random_vid(_):
 
 
 pool = mp.Pool(opt.n_threads)
-result = list(pool.map(download_random_vid, range(10**6)))
+result = list(pool.map(download_vid, range(opt.start_index, opt.end_index)))
 
 print('Downloaded %d videos' % sum(result))
