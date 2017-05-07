@@ -26,7 +26,8 @@ def process_vid(filename):
     os.mkdir(outdir)
     inputfile = os.path.join(opt.indir, filename)
 
-    command = ('ffmpeg -i {inp} -vf scale=-1:256 {out}/frame%05d.jpg'.
+    command = ('ffmpeg -i {inp} -vf scale=-1:256 -t 00:00:35.000 '
+               '{out}/frame%05d.jpg '.
                format(inp=inputfile, out=outdir))
     try:
         subprocess.run(command, shell=True, stdout=subprocess.PIPE,
